@@ -6,6 +6,7 @@ __author__ = 'v1t3x'
 import os
 import sys
 import util
+import re
 from mininet.net import Mininet, CLI
 from mininet.node import OVSSwitch, RemoteController
 from mininet.link import TCLink
@@ -70,7 +71,27 @@ def scenario_sanity_check(path):
     """
     return True    # TODO implement logic
 
+def get_generated_topologies():
+    topologies = []
+    for f in os.listdir("/home/user/mn/MNScenarioGenerator/topologies"):
+        topology_path = os.path.join("/home/user/mn/MNScenarioGenerator/topologies", f)
+        if not os.path.isdir(topology_path) and f.startswith("gen_"):
+            topologies.append(f.replace(".py", ""))
+    return topologies
 
+def get_zoo_topologies():
+    topos = []
+    for f in os.listdir("/home/user/mn/MNScenarioGenerator/topologies/zoo-dataset"):
+        topo_path = os.path.join("/home/user/mn/MNScenarioGenerator/topologies/zoo-dataset", f)
+        ext = os.path.splitext(f)[-1].lower()
+        if ext == ".graphml":
+             topos.append(f.replace(".graphml", "").lower())
+    return topos
+
+def generate_topology(topo):
+    #call(["sudo python /home/user/mn/MNScenarioGenerator/parser/GraphML-Topo-to-Mininet-Network-Generator.py", ""])
+    return 0
+    
 def main():
     original_dir = os.getcwd()
 
@@ -135,11 +156,16 @@ def main():
 
     # Get topology
     topology = args.topology
-    if topology not in topos_info:
-        print "Wrong topology name: "+topology
-        print "Available: "
-        print topos_info.keys()
-        exit(1)
+    if topology not in get_generated_topologies():
+	if topology not in get_zoo_topologies():
+            print "Wrong topology name: "+topology
+            print "Available generated: "
+            print get_generated_topologies()
+            print "Available to generate: "
+            print get_zoo_topologies()
+            exit(1)
+        else:
+	    generate_topology(topology)
 
     # Check if scenario can be run on topology
     topology_hosts = topos_info[topology][1]
