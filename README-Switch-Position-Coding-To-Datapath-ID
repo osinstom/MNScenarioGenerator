@@ -1,0 +1,32 @@
+Zaszywanie informacji o pozycji switcha w datapath-id - Instrukcja
+
+Przykładowy fragment topologii w graphml:
+<node id="7">
+	<data key="d28">1</data>
+	<data key="d29">39.11417</data>
+	<data key="d30">United States</data>
+	<data key="d31">7</data>
+	<data key="d32">-94.62746</data>
+	<data key="d33">Kansas City</data>
+</node>
+
+Z fragmentu mozna odczytac, ze mamy do czynienia z wezlem w Kansas City o wspolrzednych:
+latitude = 39.11417
+longitude = -94.62746
+
+Wspolrzedne sa kodowane w nastepujacy sposob:
+1) W przypadku wspolrzednej dodatniej (w tym przypadku latitude):
+- mnozenie razy 10^5 ---> 39.11417 * 1e5 = 3911417
+- kodowanie na liczbe heksadecymalna ---> hex(3911417) = 3baef9
+- dopelnienie zerami od przodu, tak by liczba byla 8-cyfrowa ---> 003baef9
+
+2) W przypadku wspolrzednej ujemnej (w tym przypadku longitude):
+- mnozenie razy 10^5 ---> -94.62746 * 1e5 = -9462746
+- kodowanie na liczbe heksadecymalna, bez minusa ---> hex(9462746) = 9063da
+- dopelnienie zerami od przodu, tak by liczba byla 7-cyfrowa ---> 09063da
+- doklejenie 1 z przodu jako oznaczenie minusa --> 109063da
+
+Nastepnie wspolrzedne sa sklejane (longitude + latitude) i ustawiane jak datapath-id switcha ---> 00:3b:ae:f9:10:90:63:da
+
+W trakcie symulacji informacje mozna pobrac z ODLa poprzez TEE API (http://<ODL-IP>:8080/tee/devices), switch bedzie opisany nastepujaco:
+[..., {"id":"00:3b:ae:f9:10:90:63:da","type":"SWITCH","node":{"nodeIDString":"00:3b:ae:f9:10:90:63:da","type":"OF","id":16799408373916634}}, ...]
