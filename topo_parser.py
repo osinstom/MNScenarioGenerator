@@ -42,6 +42,20 @@ import sys
 import math
 import re
 
+#########################################################
+# Encode position to hex string. Added by Pawel Borawski
+def position_encode(dec):
+    if(dec>=0):
+        dec_hex = hex(int(dec*1e5))[2:]
+        while(len(dec_hex)<8):
+            dec_hex="0"+dec_hex
+    else:
+        dec_hex = hex(int(dec*1e5))[3:]
+        while(len(dec_hex)<7):
+            dec_hex="0" + dec_hex
+        dec_hex = "1" + dec_hex
+    return dec_hex
+###########################################################
 
 def generate(argv):
     input_file_name = ''
@@ -273,12 +287,18 @@ if __name__ == '__main__':
 
     for i in range(0, len(id_node_name_dict)):
 
+        ######################## Create position string ########################
+        position_string = position_encode(float(id_latitude_dict[str(i)])) + position_encode(float(id_longitude_dict[str(i)]))
+
         #create switch
         temp1 =  '        '
         temp1 += id_node_name_dict[str(i)]
         temp1 += " = self.addSwitch( 's"
         temp1 += str(i)
-        temp1 += "' )\n"
+        ## Add position string to switch declaration
+        temp1 += "', dpid='" + position_string + "'"
+        temp1 += ")\n"
+        ########################################################################
 
         #create corresponding host
         temp2 =  '        '

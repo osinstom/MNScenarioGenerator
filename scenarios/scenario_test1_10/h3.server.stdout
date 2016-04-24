@@ -1,13 +1,13 @@
 ------------------------------------------------------------
-Server listening on TCP port 5001
-TCP window size: 85.3 KByte (default)
-------------------------------------------------------------
-[  9] local 10.0.0.4 port 5001 connected with 10.0.0.3 port 38516
-[ 10] local 10.0.0.4 port 5001 connected with 10.0.0.10 port 39726
-[ 11] local 10.0.0.4 port 5001 connected with 10.0.0.7 port 44454
+Server listening on UDP port 5001
+Receiving 1470 byte datagrams
+UDP buffer size:  160 KByte (default)
+-------------------------------[  9] local 10.0.0.4 port 5001 connected with 10.0.0.3 port 39052
+[ 10] local 10.0.0.4 port 5001 connected with 10.0.0.10 port 40309
+[ 11] local 10.0.0.4 port 5001 connected with 10.0.0.7 port 45078
 [ ID] Interval       Transfer     Bandwidth
-[ 11]  0.0- 7.8 sec  2.50 MBytes  2.67 Mbits/sec
-[ 10]  0.0-31.4 sec  1.62 MBytes   434 Kbits/sec
-[ 12] local 10.0.0.4 port 5001 connected with 10.0.0.2 port 54194
-[  9]  0.0-81.2 sec  27.1 MBytes  2.80 Mbits/sec
-[ 12]  0.0-80.0 sec  42.9 MBytes  4.49 Mbits/sec
+[ 11]  0.0-12.4 sec   384 KBytes   253 Kbits/sec
+[ 10]  0.0-31.0 sec  14.8 MBytes  3.99 Mbits/sec
+[ 12] local 10.0.0.4 port 5001 connected with 10.0.0.2 port 54935
+[  9]  0.0-79.4 sec  38.2 MBytes  4.04 Mbits/sec
+[ 12]  0.0-72.6 sec  23.1 MBytes  2.67 Mbits/sec

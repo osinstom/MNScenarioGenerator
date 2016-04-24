@@ -23,17 +23,17 @@ class GeneratedTopo( Topo ):
         Topo.__init__( self, **opts )
 
         # add nodes, switches first...
-        NewYork = self.addSwitch( 's0' )
-        Chicago = self.addSwitch( 's1' )
-        WashingtonDC = self.addSwitch( 's2' )
-        Seattle = self.addSwitch( 's3' )
-        Sunnyvale = self.addSwitch( 's4' )
-        LosAngeles = self.addSwitch( 's5' )
-        Denver = self.addSwitch( 's6' )
-        KansasCity = self.addSwitch( 's7' )
-        Houston = self.addSwitch( 's8' )
-        Atlanta = self.addSwitch( 's9' )
-        Indianapolis = self.addSwitch( 's10' )
+        NewYork = self.addSwitch( 's0', dpid='003e20031070ec95')
+        Chicago = self.addSwitch( 's1', dpid='003fdbaa1085be4d')
+        WashingtonDC = self.addSwitch( 's2', dpid='003b596710758c55')
+        Seattle = self.addSwitch( 's3', dpid='0048a42d10baa9f7')
+        Sunnyvale = self.addSwitch( 's4', dpid='0039053310ba3673')
+        LosAngeles = self.addSwitch( 's5', dpid='0033f5a710b46cf0')
+        Denver = self.addSwitch( 's6', dpid='003ca31b10a031a6')
+        KansasCity = self.addSwitch( 's7', dpid='003baef9109063da')
+        Houston = self.addSwitch( 's8', dpid='002d6a4810918347')
+        Atlanta = self.addSwitch( 's9', dpid='00337f341080c40e')
+        Indianapolis = self.addSwitch( 's10', dpid='003cae861083777c')
 
         # ... and now hosts
         NewYork_host = self.addHost( 'h0' )
