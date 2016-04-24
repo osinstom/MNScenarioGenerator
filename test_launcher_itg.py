@@ -227,7 +227,7 @@ def main():
     
     #topo = importlib.import_module("gen_{}".format(topology))
 
-    # Change comments to load a fixed topology   
+    #Change comments to load a fixed topology   
     #f, filename, desc = imp.find_module('gen_bteurope', [os.path.abspath(os.getcwd()) + '/topologies'])
     #topo = imp.load_module('gen_bteurope', f, filename, desc)
     f, filename, desc = imp.find_module("gen_{}".format(topology) , [os.path.abspath(os.getcwd()) + '/topologies'])
