@@ -102,12 +102,16 @@ def get_zoo_topologies():
              topos.append(f.replace(".graphml", "").lower())
     return topos
 
-def generate_topology(topo):
+def generate_topology(topo, hosts, random):
     arg = []
     arg.append("-f")
     arg.append("topologies/zoo-dataset/" + topo.title() + ".graphml") # Path to graphML file
     arg.append("-o")
     arg.append("topologies/gen_" + topo + ".py") # Output file name
+    arg.append("-H")
+    arg.append(hosts)
+    if random:
+        arg.append("-r")
     generate(arg)
     print "Topology {} generated.".format(topo)
     return 0
@@ -124,6 +128,9 @@ def main():
     parser.add_argument("-ls", "--list-scenarios", action="store_true", help="list available scenarios")
     parser.add_argument("-s", "--scenario", help="select test scenario - dir name or just scenario name")
     parser.add_argument("-d", "--scenarios-dir", help="directory with scenarios (default: current directory)")
+    parser.add_argument("-H", "--hosts", help="Number of hosts in network ('per switch' for uniform distribution)")
+    parser.add_argument("-dr", "--random-distribution", action="store_true", default=False, 
+                        help="Random hosts distribution in network (default: uniform)")
     parser.add_argument("-c", "--stp-switch", action="store_true",
                         help="Run with STP switches. Disconnects from controller.")
     parser.add_argument("-o", "--logs-dir",
@@ -156,23 +163,15 @@ def main():
         for s in get_scenarios(scenarios_dir):
             print s
         return 0
-
-    # Get scenario dir
+    
     scenario = args.scenario
     all_scenarios = get_scenarios(scenarios_dir)
     scenario_dir = None
     if scenario in all_scenarios:
         scenario_dir = os.path.join(scenarios_dir, scenario)
     else:
-        for s in all_scenarios:
-            if "_"+scenario+"_" in s:
-                scenario_dir = os.path.join(scenarios_dir, s)
-
-    if not scenario_dir:
-        print "Wrong scenario name: "+scenario
-        print "Available: "
-        print all_scenarios
-        exit(1)
+        os.mkdir(scenarios_dir + '/' + scenario)
+        scenario_dir = os.path.join(scenarios_dir, scenario)
 
     # Get topology
     topology = args.topology
@@ -180,7 +179,7 @@ def main():
         print "Topology {} exists".format(topology)
     else:
         if topology in get_zoo_topologies():
-            generate_topology(topology)    
+            generate_topology(topology, args.hosts, args.random_distribution)    
         else:
             print "Wrong topology name: "+topology
             print "Available generated: "   
@@ -190,15 +189,16 @@ def main():
             exit(1)
     
     # Check if scenario can be run on topology
-    topology_hosts = topos_info[topology][1]
-    scenario_hosts = int(scenario_dir.split('_')[-1])
-    if scenario_hosts > topology_hosts:
-        print "Cannot run scenario {} ({} hosts) on topology {} ({} hosts). Too many hosts in scenario.".format(scenario, scenario_hosts, topology, topology_hosts)
-        exit(4)
+    #topology_hosts = topos_info[topology][1]
+    #scenario_hosts = int(scenario_dir.split('_')[-1])
+    #if scenario_hosts > topology_hosts:
+    #    print "Cannot run scenario {} ({} hosts) on topology {} ({} hosts). Too many hosts in scenario.".format(scenario, scenario_hosts, topology, topology_hosts)
+    #    exit(4)
+#     print scenario_dir
+#     if not os.path.exists(scenario_dir):
+#         print "Not found generated test dir: {}. Please run ./test_generator_itg.py first.".format(scenario_dir)
+#         exit(4)
 
-    if not os.path.exists(scenario_dir):
-        print "Not found generated test dir: {}. Please run ./test_generator_itg.py first.".format(scenario_dir)
-        exit(4)
     os.chdir(scenario_dir)
 
     log_dir = None
@@ -221,7 +221,7 @@ def main():
         print "Storing logs in: {}".format(os.path.join(os.getcwd(), log_dir))
     else:
         print "Not storing logs."
-    print "Topology: {} Scenario: {}".format(topology, scenario_dir)
+    print "Topology: {} Scenario: {}".format(topology, scenario)
     
     os.chdir(original_dir)
     
@@ -241,8 +241,8 @@ def main():
     # Start network
     print "Starting network.."
     net.start()
-
-    os.chdir(scenario_dir)
+    
+    
 
     if args.stp_switch:
         util.turn_legacy_on()
@@ -263,7 +263,7 @@ def main():
         print "ERROR Unknown tool: {}".format(args.tool)
         net.stop()
         sys.exit(3)
-
+        
     # Run servers
     hosts = net.hosts
     print "Starting servers..."

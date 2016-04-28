@@ -16,7 +16,8 @@
 #   --bandwidth     [number as integer for bandwidth in mbit]
 #   -c              [controller ip as string]
 #   --controller    [controller ip as string]
-#
+#   -h              [number of hosts per switch]
+#   --hosts         [number of hosts per switch]
 # Without any input, program will terminate.
 # Without specified output, outputfile will have the same name as the input file.
 # This means, the argument for the outputfile can be omitted.
@@ -62,6 +63,8 @@ def generate(argv):
     output_file_name = ''
     bandwidth_argument = ''
     controller_ip = ''
+    hosts = ''
+    rand_dist = False
 
     # first check commandline arguments
     for i in range(len(argv)):
@@ -84,7 +87,19 @@ def generate(argv):
             controller_ip = argv[i+1]
         if argv[i] == '--controller':
             controller_ip = argv[i+1]
-
+        if argv[i] == '-H':
+            hosts = argv[i+1]
+        if argv[i] == '--hosts':
+            hosts == argv[i+1]
+        if argv[i] == '-r':
+            print 'RANDOM host distribution not implemented yet !!!!!'
+            exit(1)
+            rand_dist = True
+        if argv[i] == '--random':
+            print 'RANDOM host distribution not implemented yet !!!!!'
+            exit(1)
+            rand_dist = True
+            
     # terminate when inputfile is missing
     if input_file_name == '':
         sys.exit('\n\tNo input file was specified as argument....!')
@@ -284,7 +299,8 @@ if __name__ == '__main__':
     tempstring1 = ''
     tempstring2 = ''
     tempstring3 = ''
-
+    print 'here'
+    host_count = 0
     for i in range(0, len(id_node_name_dict)):
 
         ######################## Create position string ########################
@@ -298,25 +314,28 @@ if __name__ == '__main__':
         ## Add position string to switch declaration
         temp1 += "', dpid='" + position_string + "'"
         temp1 += ")\n"
-        ########################################################################
-
-        #create corresponding host
-        temp2 =  '        '
-        temp2 += id_node_name_dict[str(i)]
-        temp2 += "_host = self.addHost( 'h"
-        temp2 += str(i)
-        temp2 += "' )\n"
         tempstring1 += temp1
-        tempstring2 += temp2
-
+        ########################################################################
+        
+        #create corresponding host
+        for h in range(0, int(hosts)):
+            temp2 =  '        '
+            temp2 += id_node_name_dict[str(i)] + str(h)
+            temp2 += "_host = self.addHost( 'h"
+            temp2 += str(host_count)
+            temp2 += "' )\n"
+            tempstring2 += temp2
+            host_count += 1
+            
         # link each switch and its host...
-        temp3 =  '        self.addLink( '
-        temp3 += id_node_name_dict[str(i)]
-        temp3 += ' , '
-        temp3 += id_node_name_dict[str(i)]
-        temp3 += "_host )"
-        temp3 += '\n'
-        tempstring3 += temp3
+        for h in range(0, int(hosts)):
+            temp3 =  '        self.addLink( '
+            temp3 += id_node_name_dict[str(i)]
+            temp3 += ' , '
+            temp3 += id_node_name_dict[str(i)] + str(h)
+            temp3 += "_host )"
+            temp3 += '\n'
+            tempstring3 += temp3
 
     outputstring_to_be_exported += outputstring_2a
     outputstring_to_be_exported += tempstring1

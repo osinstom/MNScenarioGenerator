@@ -37,14 +37,14 @@ def get_hostname(host_num):
     return "h{}".format(host_num)
 
 
-def main():
+def generate_traffic(max_host):
     random.seed()
     if os.path.exists(OUTPUT_DIR):
         shutil.rmtree(OUTPUT_DIR)
     os.mkdir(OUTPUT_DIR)
     os.chmod(OUTPUT_DIR, 0775)
 
-    hosts = set(range(MIN_HOST, MAX_HOST+1))
+    hosts = set(range(MIN_HOST, max_host+1))
     print hosts
     for host_number in random.sample(hosts, CLIENTS):
         file_name = FILE_FORMAT.format(host=get_hostname(host_number))
