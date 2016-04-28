@@ -23,6 +23,7 @@ import importlib
 from mininet.topo import Topo
 from subprocess import call
 from topo_parser import generate
+from traffic_generator_itg import generate_traffic
 
 # TODO LIST
 # - in case of repeats logs will be overridden
@@ -128,7 +129,7 @@ def main():
     parser.add_argument("-ls", "--list-scenarios", action="store_true", help="list available scenarios")
     parser.add_argument("-s", "--scenario", help="select test scenario - dir name or just scenario name")
     parser.add_argument("-d", "--scenarios-dir", help="directory with scenarios (default: current directory)")
-    parser.add_argument("-H", "--hosts", help="Number of hosts in network ('per switch' for uniform distribution)")
+    parser.add_argument("-H", "--hosts", default=1, help="Number of hosts in network ('per switch' for uniform distribution)")
     parser.add_argument("-dr", "--random-distribution", action="store_true", default=False, 
                         help="Random hosts distribution in network (default: uniform)")
     parser.add_argument("-c", "--stp-switch", action="store_true",
@@ -164,6 +165,7 @@ def main():
             print s
         return 0
     
+    traffic_generation = False
     scenario = args.scenario
     all_scenarios = get_scenarios(scenarios_dir)
     scenario_dir = None
@@ -172,6 +174,7 @@ def main():
     else:
         os.mkdir(scenarios_dir + '/' + scenario)
         scenario_dir = os.path.join(scenarios_dir, scenario)
+        traffic_generation = True
 
     # Get topology
     topology = args.topology
@@ -242,7 +245,10 @@ def main():
     print "Starting network.."
     net.start()
     
-    
+    if(traffic_generation):
+        generate_traffic(len(net.hosts), scenario_dir)
+
+    print 'traffic generated'
 
     if args.stp_switch:
         util.turn_legacy_on()

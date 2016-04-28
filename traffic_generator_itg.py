@@ -5,8 +5,6 @@ import random
 import os
 import shutil
 
-OUTPUT_DIR = 'generated_test'
-
 # Parameters that need to be filled to generate test
 CLIENTS = 6
 MIN_HOST = 1
@@ -18,8 +16,6 @@ FLOW_TYPES = ['UDP', 'TCP']
 # default packet size 512 bytes
 CONSTANT_RATE = (10**3, 20 * 10**3)     # (4mbits - 80 mbits)
 # TODO ports src dst params
-
-FILE_FORMAT = OUTPUT_DIR+"/{host}.ditgs"
 
 
 def gen_params(dst_ip, flow_type):
@@ -37,12 +33,14 @@ def get_hostname(host_num):
     return "h{}".format(host_num)
 
 
-def generate_traffic(max_host):
+def generate_traffic(max_host, OUTPUT_DIR):
     random.seed()
-    if os.path.exists(OUTPUT_DIR):
-        shutil.rmtree(OUTPUT_DIR)
-    os.mkdir(OUTPUT_DIR)
+    if not os.path.exists(OUTPUT_DIR):
+        os.mkdir(OUTPUT_DIR)
+        
     os.chmod(OUTPUT_DIR, 0775)
+    
+    FILE_FORMAT = OUTPUT_DIR+"/{host}.ditgs"
 
     hosts = set(range(MIN_HOST, max_host+1))
     print hosts
