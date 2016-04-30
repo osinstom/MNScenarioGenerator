@@ -322,7 +322,7 @@ if __name__ == '__main__':
             temp2 =  '        '
             temp2 += id_node_name_dict[str(i)] + str(h)
             temp2 += "_host = self.addHost( 'h"
-            temp2 += str(host_count)
+            temp2 += str(host_count) + "_" + str(i)
             temp2 += "' )\n"
             tempstring2 += temp2
             host_count += 1

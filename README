@@ -1,0 +1,88 @@
+##########
+
+Mininet Scenarios Creator
+
+##########
+
+Launcher: test_launcher.py
+
+################
+
+STARTUP TUTORIAL - z poziomu konsoli
+
+################
+Usage:
+sudo python test_launcher_itg.py [-h] [-l] [-t TOPOLOGY] [-B BANDWIDTH] [-lt] [-ls]
+                            [-d SCENARIOS_DIR] [-H HOSTS] [-dr] [-stp]
+                            [-o LOGS_DIR] [-r REPEAT] [--tool TOOL]
+                            [-T TRAFFIC_TYPE] [-b BITRATE] [-c CLIENTS]
+                            [-f FLOWS]
+
+Mandatory: [-t TOPOLOGY] [-d SCENARIOS_DIR] [-T TRAFFIC_TYPE] [-b BITRATE] [-c CLIENTS] [-f FLOWS]
+
+Params:
+  -h, --help            show this help message and exit
+  -l, --store_logs      store logs (default: logs are discarded)
+  -t TOPOLOGY, --topology TOPOLOGY
+                        name of topology to run
+  -B BANDWIDTH, --bandwidth BANDWIDTH
+                        Bandwidth of links (in Mbit/s
+  -lt, --list-topologies
+                        list available topologies
+  -ls, --list-scenarios
+                        list available scenarios
+  -d SCENARIOS_DIR, --scenarios-dir SCENARIOS_DIR
+                        directory with scenarios (default: current directory)
+  -H HOSTS, --hosts HOSTS
+                        Number of hosts per switch in network (for uniform it's simply, for random distribution number of hosts in network is "numberOfSwitches" * HOSTS
+  -rd, --random-distribution
+                        Random hosts distribution in network (default:
+                        uniform) // NOT WORKING YET!
+  -stp, --stp-switch    Run with STP switches. Disconnects from controller.
+  -o LOGS_DIR, --logs-dir LOGS_DIR
+                        directory for storing logs (default: logs/ in scenario
+                        directory). Implies storing logs
+  -r REPEAT, --repeat REPEAT
+                        number of test case repeats (-1 for infinite).
+                        Warning: Logs will be overridden
+  --tool TOOL           Traffic generation tool: iperf, ditg
+  -T TRAFFIC_TYPE, --traffic-type TRAFFIC_TYPE
+                        Type of generated traffic (tcp/udp/random)
+  -b BITRATE, --bitrate BITRATE
+                        Bitrate of generated traffic (low/medium/high)
+  -c CLIENTS, --clients CLIENTS
+                        Number of clients generating traffic
+  -f FLOWS, --flows FLOWS
+                        Number of flows per client
+
+Co powinno być konfigurowalne? 
+- rozklad hostow: uniform/random
+- ilosc hostow per switch
+- typ ruchu (tcp/udp/random)
+- charakterystyka ruchu (vbr/cbr) ???? // NIEMOŻLIWE W IPERF!
+- bitrate (low/medium/high)
+- ilość klientów generująca ruch (max=ilość hostów w sieci)
+- ilość flowów per klient generujący ruch
+- ???
+
+################
+
+STARTUP TUTORIAL - z poziomu PROXY
+
+################
+
+1) Aby zintegrować 'kreator scenariuszy Mininet' z CoSDN proxy należy w /home/user/programs/defnet/other/mn_mods/ podmienić skrypt 'emn.sh' na skrypt znajdujący się z folderze 'emn_script' w tym projekcie. 
+Zaszły zmiany w sposobie wywoływania aplikacji 'test_launcher.py' - uruchamiany jest teraz w sposób bardziej "generyczny". 
+
+
+EMN parameters:
+[topology name]
+Format: <zoo-topology-name>-<host_distribution>-<hosts-per-switch>
+[scenario name]
+Format: iperf_<traffic_type>-<bitrate_level>-<hosts_generating_traffic>-<flows_per_host>
+        ditg_<TO-DO>
+
+Example:
+EMN agis:uniform:3 iperf_tcp:low:6:5
+
+

@@ -6,3 +6,4 @@ scenarios_link
 *.swp
 scenarios
 topologies
+*.py~

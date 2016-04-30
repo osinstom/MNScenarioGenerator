@@ -31,7 +31,7 @@ from traffic_generator_itg import generate_traffic
 FNULL = open(os.devnull, 'w')
 
 SCENARIO_PREFIX = "scenario_"
-ITG_SCRIPT_SUFFIX = ".ditgs"
+TRAFFIC_FILE_SUFFIX = ".traffic"
 
 EPILOG = """
 Topologies:
@@ -46,7 +46,7 @@ Scenario dir contains files named [host_name]{itg_script_suffix} which are input
 Example usage:
 --------------
 Run scenario s1 (scenarios/scenario_s1_10) on abilene topology:
-    sudo {script_name} -t abilene -s s1 -d scenarios
+    sudo {script_name} -t abilene -d scenarios
 List topologies:
     sudo {script_name} -lt
 List scenarios in current dir:
@@ -54,7 +54,7 @@ List scenarios in current dir:
 List scenarios in current scenarios_dir:
     sudo {script_name} -ls -d scenarios_dir
 
-""".format(scenario_prefix=SCENARIO_PREFIX, itg_script_suffix=ITG_SCRIPT_SUFFIX,
+""".format(scenario_prefix=SCENARIO_PREFIX, itg_script_suffix=TRAFFIC_FILE_SUFFIX,
            script_name=sys.argv[0])
 
 def import_from(module, name):
@@ -79,8 +79,8 @@ def scenario_sanity_check(path):
     """
     return True    # TODO implement logic
 
-def isGenerated(topology):
-    topology = "gen_" + topology
+def isGenerated(topology, hosts, distribution):
+    topology = "gen_" + topology + "_" + distribution + "_" + str(hosts)
     for t in get_generated_topologies():
         if t == topology:
             return True
@@ -103,19 +103,23 @@ def get_zoo_topologies():
              topos.append(f.replace(".graphml", "").lower())
     return topos
 
-def generate_topology(topo, hosts, random):
+def generate_topology(topo, hosts, distribution):
     arg = []
     arg.append("-f")
     arg.append("topologies/zoo-dataset/" + topo.title() + ".graphml") # Path to graphML file
     arg.append("-o")
-    arg.append("topologies/gen_" + topo + ".py") # Output file name
+    arg.append("topologies/gen_" + topo + "_" + distribution + "_" + str(hosts) + ".py") # Output file name
+    if distribution == 'random':
+        arg.append("-r")
     arg.append("-H")
     arg.append(hosts)
-    if random:
-        arg.append("-r")
+    
     generate(arg)
     print "Topology {} generated.".format(topo)
     return 0
+
+def create_scenario_name(traffic_type, bitrate, clients, flows, topology, distribution, hosts):
+    return "scenario_" + traffic_type + "-" + bitrate + "-" + str(clients) + "-" + str(flows) + "_" + topology + "-" + distribution + "-" + str(hosts)
     
 def main():
     original_dir = os.getcwd()
@@ -125,14 +129,15 @@ def main():
     parser.add_argument("-l", "--store_logs", action="store_true", default=False,
                         help="store logs (default: logs are discarded)")
     parser.add_argument("-t", "--topology", help="name of topology to run")
+    parser.add_argument("-B", "--bandwidth", default=1, help="Bandwidth of links (in Mbit/s")
     parser.add_argument("-lt", "--list-topologies", action="store_true", help="list available topologies")
     parser.add_argument("-ls", "--list-scenarios", action="store_true", help="list available scenarios")
-    parser.add_argument("-s", "--scenario", help="select test scenario - dir name or just scenario name")
+#     parser.add_argument("-s", "--scenario", help="select test scenario - dir name or just scenario name")
     parser.add_argument("-d", "--scenarios-dir", help="directory with scenarios (default: current directory)")
     parser.add_argument("-H", "--hosts", default=1, help="Number of hosts in network ('per switch' for uniform distribution)")
     parser.add_argument("-dr", "--random-distribution", action="store_true", default=False, 
                         help="Random hosts distribution in network (default: uniform)")
-    parser.add_argument("-c", "--stp-switch", action="store_true",
+    parser.add_argument("-stp", "--stp-switch", action="store_true",
                         help="Run with STP switches. Disconnects from controller.")
     parser.add_argument("-o", "--logs-dir",
                         help="directory for storing logs (default: logs/ in scenario directory). Implies storing logs")
@@ -140,13 +145,29 @@ def main():
                         help="number of test case repeats (-1 for infinite). Warning: Logs will be overridden")
     parser.add_argument("--tool", default='iperf',
                         help="Traffic generation tool: iperf, ditg")
-
+    parser.add_argument("-T", "--traffic-type", help="Type of generated traffic")
+    parser.add_argument("-b", "--bitrate", help="Bitrate of generated traffic (low/medium/high)")
+    parser.add_argument("-c", "--clients", help="Number of clients generating traffic")
+    parser.add_argument("-f", "--flows", help="Number of flows per client")
+    
     args = parser.parse_args()
 
-    if not (args.list_scenarios or args.list_topologies) and not (args.topology and args.scenario):
-        print "Wrong parameters: Need to set topology and scenario. Or just list topologies or scenarios."
+    if not (args.list_scenarios or args.list_topologies) and not (args.topology):
+        print "Wrong parameters: Need to set topology. Or just list topologies or scenarios."
         print ""
         parser.print_help()
+        exit(1)
+    
+    if args.tool and args.tool == 'iperf':
+        if not (args.traffic_type and args.bitrate and args.clients and args.flows):
+            print "No traffic parameters!"
+            print ""
+            parser.print_help()
+            exit(1)
+        else:
+            util.validate_params(args.traffic_type, args.bitrate)
+    elif args.tool and args.tool == 'ditg':
+        print "ditg full support not implemented yet"
         exit(1)
 
     if args.list_topologies:
@@ -165,8 +186,17 @@ def main():
             print s
         return 0
     
+    
+    
+    distribution = ''
+    if(args.random_distribution):
+        distribution = "random"
+    else:
+        distribution = "uniform"
+    
     traffic_generation = False
-    scenario = args.scenario
+    scenario = create_scenario_name(args.traffic_type, args.bitrate, args.clients, args.flows, args.topology, distribution, args.hosts)
+    print scenario
     all_scenarios = get_scenarios(scenarios_dir)
     scenario_dir = None
     if scenario in all_scenarios:
@@ -178,11 +208,11 @@ def main():
 
     # Get topology
     topology = args.topology
-    if isGenerated(topology):
-        print "Topology {} exists".format(topology)
+    if isGenerated(topology, args.hosts, distribution):
+        print "Topology {}-{}-{} exists".format(topology, distribution, args.hosts)
     else:
         if topology in get_zoo_topologies():
-            generate_topology(topology, args.hosts, args.random_distribution)    
+            generate_topology(topology, args.hosts, distribution)    
         else:
             print "Wrong topology name: "+topology
             print "Available generated: "   
@@ -190,6 +220,8 @@ def main():
             print "Available to generate: "
             print get_zoo_topologies()
             exit(1)
+    
+    topology = "gen_" + topology + "_" + distribution + "_" + str(args.hosts)
     
     # Check if scenario can be run on topology
     #topology_hosts = topos_info[topology][1]
@@ -224,6 +256,7 @@ def main():
         print "Storing logs in: {}".format(os.path.join(os.getcwd(), log_dir))
     else:
         print "Not storing logs."
+        
     print "Topology: {} Scenario: {}".format(topology, scenario)
     
     os.chdir(original_dir)
@@ -233,9 +266,10 @@ def main():
     #Change comments to load a fixed topology   
     #f, filename, desc = imp.find_module('gen_bteurope', [os.path.abspath(os.getcwd()) + '/topologies'])
     #topo = imp.load_module('gen_bteurope', f, filename, desc)
-    f, filename, desc = imp.find_module("gen_{}".format(topology) , [os.path.abspath(os.getcwd()) + '/topologies'])
-    topo = imp.load_module("gen_{}".format(topology) , f, filename, desc)
     
+    
+    f, filename, desc = imp.find_module("{}".format(topology) , [os.path.abspath(os.getcwd()) + '/topologies'])
+    topo = imp.load_module("{}".format(topology) , f, filename, desc)
     
     print "Launching Mininet.."
     net = Mininet(topo=topo.GeneratedTopo(), controller=RemoteController, switch=OVSSwitch, host=CPULimitedHost,
@@ -245,11 +279,9 @@ def main():
     print "Starting network.."
     net.start()
     
-    if(traffic_generation):
-        generate_traffic(len(net.hosts), scenario_dir)
-
-    print 'traffic generated'
-
+    #if(traffic_generation):
+    generate_traffic(net.hosts, scenario_dir, args.clients, args.flows, args.traffic_type, args.bitrate)
+    
     if args.stp_switch:
         util.turn_legacy_on()
         print "Waiting {} s ...".format(LEGACY_INITIALIZATION_DELAY)
@@ -269,7 +301,9 @@ def main():
         print "ERROR Unknown tool: {}".format(args.tool)
         net.stop()
         sys.exit(3)
-        
+       
+    os.chdir(scenario_dir)
+     
     # Run servers
     hosts = net.hosts
     print "Starting servers..."
@@ -278,7 +312,7 @@ def main():
         test_tool.run_server(host_name)
 
     iterations = args.repeat
-
+    
     if iterations != 1:
         start_time = time.time()
     i = 0
@@ -289,7 +323,7 @@ def main():
         # Run ITGSends per host config
         threads = []
         for f in os.listdir(os.path.curdir):
-            if os.path.isfile(f) and f.endswith(ITG_SCRIPT_SUFFIX):
+            if os.path.isfile(f) and f.endswith(TRAFFIC_FILE_SUFFIX):
                 host_name = get_hostname(f)
                 test_tool.run_client(host_name, f)
 
