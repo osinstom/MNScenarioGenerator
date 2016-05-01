@@ -103,7 +103,7 @@ def get_zoo_topologies():
              topos.append(f.replace(".graphml", "").lower())
     return topos
 
-def generate_topology(topo, hosts, distribution):
+def generate_topology(topo, hosts, distribution, bandwidth):
     arg = []
     arg.append("-f")
     arg.append("topologies/zoo-dataset/" + topo.title() + ".graphml") # Path to graphML file
@@ -113,13 +113,15 @@ def generate_topology(topo, hosts, distribution):
         arg.append("-r")
     arg.append("-H")
     arg.append(hosts)
-    
+    arg.append("--bw")
+    arg.append(bandwidth)
+    print "BW=" + str(bandwidth)
     generate(arg)
     print "Topology {} generated.".format(topo)
     return 0
 
-def create_scenario_name(traffic_type, bitrate, clients, flows, topology, distribution, hosts):
-    return "scenario_" + traffic_type + "-" + bitrate + "-" + str(clients) + "-" + str(flows) + "_" + topology + "-" + distribution + "-" + str(hosts)
+def create_scenario_name(traffic_type, c_min, c_max, clients, flows, topology, distribution, hosts):
+    return "scenario_" + traffic_type + "-rate[" + c_min + ":" + c_max + "]-" + str(clients) + "-" + str(flows) + "_" + topology + "-" + distribution + "-" + str(hosts)
     
 def main():
     original_dir = os.getcwd()
@@ -129,7 +131,7 @@ def main():
     parser.add_argument("-l", "--store_logs", action="store_true", default=False,
                         help="store logs (default: logs are discarded)")
     parser.add_argument("-t", "--topology", help="name of topology to run")
-    parser.add_argument("-B", "--bandwidth", default=1, help="Bandwidth of links (in Mbit/s")
+    parser.add_argument("-B", "--bandwidth", default=1, help="Bandwidth of links in Mbit/s (default: 1 Mbit/s)")
     parser.add_argument("-lt", "--list-topologies", action="store_true", help="list available topologies")
     parser.add_argument("-ls", "--list-scenarios", action="store_true", help="list available scenarios")
 #     parser.add_argument("-s", "--scenario", help="select test scenario - dir name or just scenario name")
@@ -146,8 +148,9 @@ def main():
     parser.add_argument("--tool", default='iperf',
                         help="Traffic generation tool: iperf, ditg")
     parser.add_argument("-T", "--traffic-type", help="Type of generated traffic")
-    parser.add_argument("-b", "--bitrate", help="Bitrate of generated traffic (low/medium/high)")
-    parser.add_argument("-c", "--clients", help="Number of clients generating traffic")
+    parser.add_argument("--c_min", help="Minimum bitrate of generated traffic")
+    parser.add_argument("--c_max", help="Maximum bitrate of generated traffic")
+    parser.add_argument("-g", "--clients", help="Number of clients generating traffic")
     parser.add_argument("-f", "--flows", help="Number of flows per client")
     
     args = parser.parse_args()
@@ -159,13 +162,13 @@ def main():
         exit(1)
     
     if args.tool and args.tool == 'iperf':
-        if not (args.traffic_type and args.bitrate and args.clients and args.flows):
-            print "No traffic parameters!"
+        if not (args.traffic_type and args.c_min and args.c_max and args.clients and args.flows):
+            print "Not enough traffic parameters!"
             print ""
             parser.print_help()
             exit(1)
         else:
-            util.validate_params(args.traffic_type, args.bitrate)
+            util.validate_params(args.traffic_type)
     elif args.tool and args.tool == 'ditg':
         print "ditg full support not implemented yet"
         exit(1)
@@ -195,7 +198,7 @@ def main():
         distribution = "uniform"
     
     traffic_generation = False
-    scenario = create_scenario_name(args.traffic_type, args.bitrate, args.clients, args.flows, args.topology, distribution, args.hosts)
+    scenario = create_scenario_name(args.traffic_type, args.c_min, args.c_max, args.clients, args.flows, args.topology, distribution, args.hosts)
     print scenario
     all_scenarios = get_scenarios(scenarios_dir)
     scenario_dir = None
@@ -212,7 +215,7 @@ def main():
         print "Topology {}-{}-{} exists".format(topology, distribution, args.hosts)
     else:
         if topology in get_zoo_topologies():
-            generate_topology(topology, args.hosts, distribution)    
+            generate_topology(topology, args.hosts, distribution, args.bandwidth)    
         else:
             print "Wrong topology name: "+topology
             print "Available generated: "   
@@ -280,7 +283,7 @@ def main():
     net.start()
     
     #if(traffic_generation):
-    generate_traffic(net.hosts, scenario_dir, args.clients, args.flows, args.traffic_type, args.bitrate)
+    generate_traffic(net.hosts, scenario_dir, args.clients, args.flows, args.traffic_type, args.c_min, args.c_max)
     
     if args.stp_switch:
         util.turn_legacy_on()

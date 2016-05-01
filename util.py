@@ -16,15 +16,12 @@ FNULL = open(os.devnull, 'w')
 F_SEP = '_'
 
 TRAFFIC_TYPES = ['tcp', 'udp', 'random']
-BITRATE_LEVELS = ['low', 'medium', 'high']
 
-def validate_params(traffic_type, bitrate):
-    if not (TRAFFIC_TYPES.__contains__(traffic_type.lower())) and BITRATE_LEVELS.__contains__(bitrate.lower()):
+def validate_params(traffic_type):
+    if not (TRAFFIC_TYPES.__contains__(traffic_type.lower())):
         print "Wrong traffic parameters!"
         print "Available TRAFFIC TYPES: "
         print TRAFFIC_TYPES
-        print "Available BITRATE LEVELS: "
-        print BITRATE_LEVELS
         exit(1)
 
 def makeLegacySwitch(switch):

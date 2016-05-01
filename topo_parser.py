@@ -78,11 +78,11 @@ def generate(argv):
         if argv[i] == '--output':
             output_file_name = argv[i+1]
         if argv[i] == '-b':
-            bandwidth_argument = argv[i+1]
+            bandwidth_argument = str(argv[i+1])
         if argv[i] == '--bw':
-            bandwidth_argument = argv[i+1]
+            bandwidth_argument = str(argv[i+1])
         if argv[i] == '--bandwidth':
-            bandwidth_argument = argv[i+1]
+            bandwidth_argument = str(argv[i+1])
         if argv[i] == '-c':
             controller_ip = argv[i+1]
         if argv[i] == '--controller':

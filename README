@@ -12,21 +12,21 @@ STARTUP TUTORIAL - z poziomu konsoli
 
 ################
 Usage:
-sudo python test_launcher_itg.py [-h] [-l] [-t TOPOLOGY] [-B BANDWIDTH] [-lt] [-ls]
+test_launcher_itg.py [-h] [-l] [-t TOPOLOGY] [-B BANDWIDTH] [-lt] [-ls]
                             [-d SCENARIOS_DIR] [-H HOSTS] [-dr] [-stp]
                             [-o LOGS_DIR] [-r REPEAT] [--tool TOOL]
-                            [-T TRAFFIC_TYPE] [-b BITRATE] [-c CLIENTS]
-                            [-f FLOWS]
+                            [-T TRAFFIC_TYPE] [--c_min C_MIN] [--c_max C_MAX]
+                            [-g CLIENTS] [-f FLOWS]
 
-Mandatory: [-t TOPOLOGY] [-d SCENARIOS_DIR] [-T TRAFFIC_TYPE] [-b BITRATE] [-c CLIENTS] [-f FLOWS]
+Mandatory: [-t TOPOLOGY] [-d SCENARIOS_DIR] [-T TRAFFIC_TYPE] [--c_min C_MIN] [--c_max C_MAX] [-g CLIENTS] [-f FLOWS]
 
 Params:
-  -h, --help            show this help message and exit
+-h, --help            show this help message and exit
   -l, --store_logs      store logs (default: logs are discarded)
   -t TOPOLOGY, --topology TOPOLOGY
                         name of topology to run
   -B BANDWIDTH, --bandwidth BANDWIDTH
-                        Bandwidth of links (in Mbit/s
+                        Bandwidth of links in Mbit/s (default: 1 Mbit/s)
   -lt, --list-topologies
                         list available topologies
   -ls, --list-scenarios
@@ -34,10 +34,11 @@ Params:
   -d SCENARIOS_DIR, --scenarios-dir SCENARIOS_DIR
                         directory with scenarios (default: current directory)
   -H HOSTS, --hosts HOSTS
-                        Number of hosts per switch in network (for uniform it's simply, for random distribution number of hosts in network is "numberOfSwitches" * HOSTS
-  -rd, --random-distribution
+                        Number of hosts in network ('per switch' for uniform
+                        distribution)
+  -dr, --random-distribution
                         Random hosts distribution in network (default:
-                        uniform) // NOT WORKING YET!
+                        uniform)
   -stp, --stp-switch    Run with STP switches. Disconnects from controller.
   -o LOGS_DIR, --logs-dir LOGS_DIR
                         directory for storing logs (default: logs/ in scenario
@@ -47,13 +48,14 @@ Params:
                         Warning: Logs will be overridden
   --tool TOOL           Traffic generation tool: iperf, ditg
   -T TRAFFIC_TYPE, --traffic-type TRAFFIC_TYPE
-                        Type of generated traffic (tcp/udp/random)
-  -b BITRATE, --bitrate BITRATE
-                        Bitrate of generated traffic (low/medium/high)
-  -c CLIENTS, --clients CLIENTS
+                        Type of generated traffic
+  --c_min C_MIN         Minimum bitrate of generated traffic
+  --c_max C_MAX         Maximum bitrate of generated traffic
+  -g CLIENTS, --clients CLIENTS
                         Number of clients generating traffic
   -f FLOWS, --flows FLOWS
                         Number of flows per client
+
 
 Co powinno być konfigurowalne? 
 - rozklad hostow: uniform/random
@@ -77,12 +79,12 @@ Zaszły zmiany w sposobie wywoływania aplikacji 'test_launcher.py' - uruchamian
 
 EMN parameters:
 [topology name]
-Format: <zoo-topology-name>-<host_distribution>-<hosts-per-switch>
+Format: <zoo-topology-name>-<links_bandwidth>:<host_distribution>-<hosts-per-switch>
 [scenario name]
-Format: iperf_<traffic_type>-<bitrate_level>-<hosts_generating_traffic>-<flows_per_host>
+Format: iperf_<traffic_type>-<bitrate_min>:<bitrate_max>-<hosts_generating_traffic>-<flows_per_host>
         ditg_<TO-DO>
 
 Example:
-EMN agis:uniform:3 iperf_tcp:low:6:5
+
 
 
