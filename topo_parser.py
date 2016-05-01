@@ -18,6 +18,7 @@
 #   --controller    [controller ip as string]
 #   -h              [number of hosts per switch]
 #   --hosts         [number of hosts per switch]
+#   -r              [enable random host distribution, requires -h parameter, returns x hosts for switch, where x is taken uniformly from <0, 2* -h value>]
 # Without any input, program will terminate.
 # Without specified output, outputfile will have the same name as the input file.
 # This means, the argument for the outputfile can be omitted.
@@ -42,6 +43,7 @@ import xml.etree.ElementTree as ET
 import sys
 import math
 import re
+import random
 
 #########################################################
 # Encode position to hex string. Added by Pawel Borawski
@@ -56,7 +58,17 @@ def position_encode(dec):
             dec_hex="0" + dec_hex
         dec_hex = "1" + dec_hex
     return dec_hex
-###########################################################
+##########################################################
+
+##########################################################
+# Generate randomly distributed hosts. Added by Pawel Borawski
+def gen_rand_dist_hosts(no_switches, h_param):
+    switches_hosts = []
+    for i in range(0, no_switches):
+        switches_hosts.append(random.randint(0, h_param))
+    return switches_hosts
+
+##########################################################
 
 def generate(argv):
     input_file_name = ''
@@ -91,14 +103,12 @@ def generate(argv):
             hosts = argv[i+1]
         if argv[i] == '--hosts':
             hosts == argv[i+1]
-        if argv[i] == '-r':
-            print 'RANDOM host distribution not implemented yet !!!!!'
-            exit(1)
-            rand_dist = True
-        if argv[i] == '--random':
-            print 'RANDOM host distribution not implemented yet !!!!!'
-            exit(1)
-            rand_dist = True
+        if argv[i] == '-r' or argv[i] == '--random':
+            if hosts == '':
+                print 'RANDOM host distribution requires -h parameter!'
+                exit(1)
+            else:
+                rand_dist = True
             
     # terminate when inputfile is missing
     if input_file_name == '':
@@ -301,6 +311,8 @@ if __name__ == '__main__':
     tempstring3 = ''
     print 'here'
     host_count = 0
+    if rand_dist:
+        hosts_in_switch = gen_rand_dist_hosts(len(id_node_name_dict), int(hosts))
     for i in range(0, len(id_node_name_dict)):
 
         ######################## Create position string ########################
@@ -315,27 +327,50 @@ if __name__ == '__main__':
         temp1 += "', dpid='" + position_string + "'"
         temp1 += ")\n"
         tempstring1 += temp1
-        ########################################################################
         
-        #create corresponding host
-        for h in range(0, int(hosts)):
-            temp2 =  '        '
-            temp2 += id_node_name_dict[str(i)] + str(h)
-            temp2 += "_host = self.addHost( 'h"
-            temp2 += str(host_count) + "_" + str(i)
-            temp2 += "' )\n"
-            tempstring2 += temp2
-            host_count += 1
-            
-        # link each switch and its host...
-        for h in range(0, int(hosts)):
-            temp3 =  '        self.addLink( '
-            temp3 += id_node_name_dict[str(i)]
-            temp3 += ' , '
-            temp3 += id_node_name_dict[str(i)] + str(h)
-            temp3 += "_host )"
-            temp3 += '\n'
-            tempstring3 += temp3
+        
+        #create corresponding hosts (if --random or -r was not enabled)
+        if not rand_dist:
+            for h in range(0, int(hosts)):
+                temp2 =  '        '
+                temp2 += id_node_name_dict[str(i)] + str(h)
+                temp2 += "_host = self.addHost( 'h"
+                temp2 += str(host_count) + "_" + str(i)
+                temp2 += "' )\n"
+                tempstring2 += temp2
+                host_count += 1
+
+            # link each switch and its host...
+            for h in range(0, int(hosts)):
+                temp3 =  '        self.addLink( '
+                temp3 += id_node_name_dict[str(i)]
+                temp3 += ' , '
+                temp3 += id_node_name_dict[str(i)] + str(h)
+                temp3 += "_host )"
+                temp3 += '\n'
+                tempstring3 += temp3
+
+        #################### Create randomly distributed hosts #######################
+        #create corresponding random number of hosts (--random or -r was enabled)
+        elif rand_dist:
+            for h in range(0, hosts_in_switch[i]):
+                temp2 =  '        '
+                temp2 += id_node_name_dict[str(i)] + str(h)
+                temp2 += "_host = self.addHost( 'h"
+                temp2 += str(host_count) + "_" + str(i)
+                temp2 += "' )\n"
+                tempstring2 += temp2
+                host_count += 1
+  
+            # link each switch and its host...
+            for h in range(0, hosts_in_switch[i]):
+                temp3 =  '        self.addLink( '
+                temp3 += id_node_name_dict[str(i)]
+                temp3 += ' , '
+                temp3 += id_node_name_dict[str(i)] + str(h)
+                temp3 += "_host )"
+                temp3 += '\n'
+                tempstring3 += temp3
 
     outputstring_to_be_exported += outputstring_2a
     outputstring_to_be_exported += tempstring1

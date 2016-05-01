@@ -109,10 +109,10 @@ def generate_topology(topo, hosts, distribution, bandwidth):
     arg.append("topologies/zoo-dataset/" + topo.title() + ".graphml") # Path to graphML file
     arg.append("-o")
     arg.append("topologies/gen_" + topo + "_" + distribution + "_" + str(hosts) + ".py") # Output file name
-    if distribution == 'random':
-        arg.append("-r")
     arg.append("-H")
     arg.append(hosts)
+    if distribution == 'random':
+        arg.append("-r")
     arg.append("--bw")
     arg.append(bandwidth)
     print "BW=" + str(bandwidth)
