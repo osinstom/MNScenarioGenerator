@@ -49,13 +49,16 @@ Params:
   --tool TOOL           Traffic generation tool: iperf, ditg
   -T TRAFFIC_TYPE, --traffic-type TRAFFIC_TYPE
                         Type of generated traffic
-  --c_min C_MIN         Minimum bitrate of generated traffic
-  --c_max C_MAX         Maximum bitrate of generated traffic
+  --c_min C_MIN         Minimum bitrate of generated traffic ( in Mbit/s )
+  --c_max C_MAX         Maximum bitrate of generated traffic ( in Mbit/s )
   -g CLIENTS, --clients CLIENTS
                         Number of clients generating traffic
   -f FLOWS, --flows FLOWS
                         Number of flows per client
 
+EXAMPLE:
+
+sudo python -t agis -d scenarios -T tcp -H 3 -g 5 -f 3 --c_min 5 --c_max 8 
 
 Co powinno być konfigurowalne? 
 - rozklad hostow: uniform/random
@@ -75,7 +78,6 @@ STARTUP TUTORIAL - z poziomu PROXY
 
 1) Aby zintegrować 'kreator scenariuszy Mininet' z CoSDN proxy należy w /home/user/programs/defnet/other/mn_mods/ podmienić skrypt 'emn.sh' na skrypt znajdujący się z folderze 'emn_script' w tym projekcie. 
 Zaszły zmiany w sposobie wywoływania aplikacji 'test_launcher.py' - uruchamiany jest teraz w sposób bardziej "generyczny". 
-
 
 EMN parameters:
 [topology name]
